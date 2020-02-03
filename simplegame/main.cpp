@@ -1,5 +1,5 @@
-// Simple Game
-// by Dr. Jonathan Metzgar et al
+// Dodge
+// by Dain Harmon using materials from Dr. Jonathan Metzgar
 // UAF CS Game Design and Architecture Course
 #include <gamelib.hpp>
 
@@ -252,9 +252,14 @@ int main(int argc, char** argv) {
                           new GameLib::SimplePhysicsComponent(),
                           new GameLib::SimpleGraphicsComponent());
     player.speed = (float)graphics.getTileSizeX();
-    player.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
-    player.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
-    player.spriteId = 2;
+	for (unsigned x=0; x<GameLib::WorldTilesX; x++)
+		for (unsigned y=0; y<GameLib::WorldTilesY; y++)
+            if(world.getTile(x, y).charDesc==900)
+			{
+				player.position.x = (float)x;
+				player.position.y = (float)y;
+			}
+    player.spriteId = 336;
 
     // GameLib::MoveAction moveAction;
     // moveAction.setActor(&player);
