@@ -242,16 +242,19 @@ int main(int argc, char** argv) {
 
     world.actors.push_back(&player);
 
-    GameLib::Actor randomPlayer(new GameLib::RandomInputComponent(),
-                                new GameLib::SimpleActorComponent(),
-                                new GameLib::SimplePhysicsComponent(),
-                                new GameLib::SimpleGraphicsComponent());
-
-    world.actors.push_back(&randomPlayer);
-    randomPlayer.position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
-    randomPlayer.position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
-    randomPlayer.spriteId = 1;
-    randomPlayer.speed = (float)graphics.getTileSizeX();
+    for(int i=0; i<30; i++)
+    {
+        GameLib::Actor* randomPlayer=new GameLib::Actor(
+                                        new GameLib::RandomInputComponent(),
+                                        new GameLib::SimpleActorComponent(),
+                                        new GameLib::ColliderPhysicsComponent(),
+                                        new GameLib::SimpleGraphicsComponent());
+        randomPlayer->position.x = graphics.getCenterX() / (float)graphics.getTileSizeX();
+        randomPlayer->position.y = graphics.getCenterY() / (float)graphics.getTileSizeY();
+        randomPlayer->spriteId = 1;
+        randomPlayer->speed = (float)graphics.getTileSizeX();
+        world.actors.push_back(randomPlayer);
+    }
 
     float t0 = stopwatch.Stop_sf();
 
@@ -272,7 +275,18 @@ int main(int argc, char** argv) {
         {
             int x = (int)graphics.getCenterX();
             int y = (int)graphics.getCenterY();
-            gothicfont.draw(x, y, "You Win", GameLib::Gold, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
+            gothicfont.draw(x, y, "You Win!", GameLib::Gold, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
+            auto timeout=time(0);
+            context.swapBuffers();
+            while(time(0)<timeout+2);
+            break;
+        }
+
+        if (player.playerHP_<=0)
+        {
+            int x = (int)graphics.getCenterX();
+            int y = (int)graphics.getCenterY();
+            gothicfont.draw(x, y, "You Lose!", GameLib::Red, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
             auto timeout=time(0);
             context.swapBuffers();
             while(time(0)<timeout+2);
