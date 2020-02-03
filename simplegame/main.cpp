@@ -2,6 +2,8 @@
 // by Dain Harmon using materials from Dr. Jonathan Metzgar
 // UAF CS Game Design and Architecture Course
 #include <gamelib.hpp>
+#include <string>
+#include <time.h>
 
 #pragma comment(lib, "gamelib.lib")
 
@@ -190,47 +192,21 @@ int main(int argc, char** argv) {
     GameLib::Locator::provide(&input);
     GameLib::Locator::provide(&graphics);
 
-    PlaySoundCommand play0(0, false);
-    PlaySoundCommand play1(1, false);
-    PlaySoundCommand play2(2, false);
-    PlaySoundCommand play3(3, false);
-    PlayMusicCommand playMusic1(0);
-    PlayMusicCommand playMusic2(1);
-    PlayMusicCommand playMusic3(2);
     QuitCommand quitCommand;
     MovementCommand xaxisCommand;
     MovementCommand yaxisCommand;
 
     input.back = &quitCommand;
-    input.key1 = &play0;
-    input.key2 = &play1;
-    input.key3 = &play2;
-    input.key4 = &play3;
-    input.key5 = &playMusic1;
-    input.key6 = &playMusic2;
-    input.key7 = &playMusic3;
     input.axis1X = &xaxisCommand;
     input.axis1Y = &yaxisCommand;
 
     context.addSearchPath("./assets");
     context.addSearchPath("../assets");
-    SDL_Texture* testPNG = context.loadImage("godzilla.png");
-    SDL_Texture* testJPG = context.loadImage("parrot.jpg");
     graphics.setTileSize(32, 32);
     int spriteCount = context.loadTileset(0, 32, 32, "Tiles32x32.png");
     if (!spriteCount) {
         HFLOGWARN("Tileset not found");
     }
-
-    context.loadAudioClip(0, "starbattle-bad.wav");
-    context.loadAudioClip(1, "starbattle-dead.wav");
-    context.loadAudioClip(2, "starbattle-endo.wav");
-    context.loadAudioClip(3, "starbattle-exo.wav");
-    context.loadAudioClip(4, "starbattle-ok.wav");
-    context.loadAudioClip(5, "starbattle-pdead.wav");
-    context.loadMusicClip(0, "starbattlemusic1.mp3");
-    context.loadMusicClip(1, "starbattlemusic2.mp3");
-    context.loadMusicClip(2, "distoro2.mid");
 
     GameLib::Font gothicfont(&context);
     GameLib::Font minchofont(&context);
@@ -247,9 +223,9 @@ int main(int argc, char** argv) {
     Hf::StopWatch stopwatch;
     double spritesDrawn = 0;
     double frames = 0;
-    GameLib::Actor player(new GameLib::SimpleInputComponent(),
+    GameLib::PlayerActor player(new GameLib::SimpleInputComponent(),
                           new GameLib::SimpleActorComponent(),
-                          new GameLib::SimplePhysicsComponent(),
+                          new GameLib::ColliderPhysicsComponent(),
                           new GameLib::SimpleGraphicsComponent());
     player.speed = (float)graphics.getTileSizeX();
 	for (unsigned x=0; x<GameLib::WorldTilesX; x++)
@@ -292,6 +268,17 @@ int main(int argc, char** argv) {
 
         context.clearScreen(GameLib::Azure);
 
+        if (world.win)
+        {
+            int x = (int)graphics.getCenterX();
+            int y = (int)graphics.getCenterY();
+            gothicfont.draw(x, y, "You Win", GameLib::Gold, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
+            auto timeout=time(0);
+            context.swapBuffers();
+            while(time(0)<timeout+2);
+            break;
+        }
+
         for (unsigned x = 0; x < world.worldSizeX; x++) {
             for (unsigned y = 0; y < world.worldSizeY; y++) {
                 GameLib::SPRITEINFO s;
@@ -303,16 +290,11 @@ int main(int argc, char** argv) {
 
         world.update(dt, graphics);
 
-        minchofont.draw(0, 0, "Hello, world!", GameLib::Red, GameLib::Font::SHADOWED);
-        gothicfont.draw((int)graphics.getWidth(), 0, "Hello, world!", GameLib::Blue, GameLib::Font::HALIGN_RIGHT | GameLib::Font::SHADOWED);
-
-        int x = (int)graphics.getCenterX();
-        int y = (int)graphics.getCenterY();
         float s = GameLib::wave(t1, 1.0f);
         SDL_Color c = GameLib::MakeColorHI(7, 4, s, false);
-        gothicfont.draw(x, y, "Runner", c, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_CENTER | GameLib::Font::VALIGN_CENTER);
-
-		minchofont.draw(0, (int)graphics.getHeight()-2, "HP: 56", GameLib::Gold, GameLib::Font::VALIGN_BOTTOM | GameLib::Font::SHADOWED);
+        gothicfont.draw(0, 0, "Dodge!", c, GameLib::Font::SHADOWED | GameLib::Font::HALIGN_LEFT | GameLib::Font::VALIGN_TOP);
+        std::string hp="HP: "+std::to_string(player.playerHP_);
+		minchofont.draw(32*10, 0, hp.c_str(), GameLib::Gold, GameLib::Font::HALIGN_LEFT | GameLib::Font::VALIGN_TOP | GameLib::Font::SHADOWED);
 
         context.swapBuffers();
         frames++;

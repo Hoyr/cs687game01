@@ -36,6 +36,8 @@ namespace GameLib {
         // Called when an object has just ended overlapping the bounding box of this object
         virtual void endOverlap(const_weak_ptr otherObject);
 
+        virtual void collidedWith(Actor * hit);
+
         // Gets the world matrix for this actor which is transform * addlTransform
         glm::mat4 worldMatrix() const { return transform * addlTransform; }
 
@@ -93,12 +95,13 @@ namespace GameLib {
 
         // maximum speed
         float speed{ 16.0f };
+        unsigned id_{ 0 };
 
     protected:
         std::string _updateDesc() override { return { "Actor" }; }
         std::string _updateInfo() override { return { "Actor" }; }
         char charDesc_ = '?';
-        unsigned id_{ 0 };
+        
 
     private:
         InputComponent* input_{ nullptr };
@@ -107,6 +110,15 @@ namespace GameLib {
         ActorComponent* actor_{ nullptr };
 
         static unsigned idSource_;
+    };
+
+    class PlayerActor : public Actor {
+        public:
+            int playerHP_;
+            PlayerActor(InputComponent* input, ActorComponent* actor, PhysicsComponent* physics, GraphicsComponent* graphics);
+            ~PlayerActor();
+
+            void collidedWith(Actor * hit) override;
     };
 }
 

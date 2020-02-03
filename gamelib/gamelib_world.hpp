@@ -45,6 +45,8 @@ namespace GameLib {
         std::vector<Tile> tiles;
         std::vector<Actor*> actors;
 
+        bool win=false;
+
         // number of tiles in the X direction
         unsigned worldSizeX{ WorldPagesX * WorldTilesX };
 

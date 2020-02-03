@@ -16,9 +16,10 @@ namespace GameLib {
     }
 
     Actor::~Actor() {
-        delete input_;
+        /*delete input_;
         delete physics_;
         delete graphics_;
+        delete actor_;*/
     }
 
     void Actor::beginPlay() {}
@@ -35,7 +36,28 @@ namespace GameLib {
             graphics_->update(*this, graphics);
     }
 
+    void Actor::collidedWith(Actor * hit) {}
+
     void Actor::startOverlap(const_weak_ptr otherObject) {}
 
     void Actor::endOverlap(const_weak_ptr otherObject) {}
+
+    PlayerActor::PlayerActor(InputComponent* input, ActorComponent* actor, PhysicsComponent* physics, GraphicsComponent* graphics)
+        :Actor::Actor(input, actor, physics, graphics)
+    {
+        playerHP_=10;
+    }
+
+    PlayerActor::~PlayerActor() {
+        Actor::~Actor();
+    }
+
+    void PlayerActor::collidedWith(Actor * hit)
+    {
+        HFLOGDEBUG("Actor %d colliding with Actor %d",id_,hit->id_);
+        if(hit->id_>0)
+            playerHP_--;
+        hit->position.x=38;
+        hit->position.y=20;
+    }
 }

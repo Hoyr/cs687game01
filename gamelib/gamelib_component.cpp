@@ -2,6 +2,8 @@
 #include <gamelib_random.hpp>
 #include <gamelib_locator.hpp>
 #include <gamelib_component.hpp>
+#include <math.h>
+#include <vector>
 
 namespace GameLib {
     void SimpleInputComponent::update(Actor& actor) {
@@ -35,6 +37,57 @@ namespace GameLib {
         if (actor.clipToWorld) {
             actor.position.x = clamp<float>(actor.position.x, 0, (float)world.worldSizeX - actor.size.x);
             actor.position.y = clamp<float>(actor.position.y, 0, (float)world.worldSizeY - actor.size.y);
+        }
+    }
+
+    void ColliderPhysicsComponent::update(Actor& actor, World& world) {
+        auto oldPosition=actor.position;
+        SimplePhysicsComponent::update(actor, world);
+        //Hit wall?
+        std::vector<Tile> tilesToTest;
+        double frac;
+        if(modf(actor.position.x,&frac)!=0&&modf(actor.position.y,&frac)!=0)
+        {
+            tilesToTest.push_back(world.getTile(floor(actor.position.x),floor(actor.position.y)));
+            tilesToTest.push_back(world.getTile(floor(actor.position.x),ceil(actor.position.y)));
+            tilesToTest.push_back(world.getTile(ceil(actor.position.x),floor(actor.position.y)));
+            tilesToTest.push_back(world.getTile(ceil(actor.position.x),ceil(actor.position.y)));
+        }
+        else if(modf(actor.position.x,&frac)!=0)
+        {
+            tilesToTest.push_back(world.getTile(floor(actor.position.x),actor.position.y));
+            tilesToTest.push_back(world.getTile(ceil(actor.position.x),actor.position.y));
+        }
+        else if(modf(actor.position.y,&frac)!=0)
+        {
+            tilesToTest.push_back(world.getTile(actor.position.x,floor(actor.position.y)));
+            tilesToTest.push_back(world.getTile(actor.position.x,ceil(actor.position.y)));
+        }
+        else
+        {
+            tilesToTest.push_back(world.getTile(actor.position.x,actor.position.y));
+        }
+        for(Tile& t:tilesToTest)
+        {
+            if(851<=t.charDesc&&t.charDesc<=861)
+                actor.position=oldPosition;
+            if(901==t.charDesc)
+                world.win=true;
+        }
+        
+        //Hit other actor? only good for same size actors
+        for(Actor * a:world.actors)
+        {
+            if(actor.id_!=a->id_)
+            {
+                if((a->position.x<=actor.position.x&&actor.position.x<=a->position.x+1 && a->position.y<=actor.position.y&&actor.position.y<=a->position.y+1) ||
+                    (a->position.x<=actor.position.x+1&&actor.position.x+1<=a->position.x+1 && a->position.y<=actor.position.y&&actor.position.y<=a->position.y+1) ||
+                    (a->position.x<=actor.position.x&&actor.position.x<=a->position.x+1 && a->position.y<=actor.position.y+1&&actor.position.y+1<=a->position.y+1) ||
+                    (a->position.x<=actor.position.x+1&&actor.position.x+1<=a->position.x+1 && a->position.y<=actor.position.y+1&&actor.position.y+1<=a->position.y+1))
+                {
+                    actor.collidedWith(a);
+                }
+            }
         }
     }
 

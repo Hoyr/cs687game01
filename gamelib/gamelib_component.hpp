@@ -61,6 +61,13 @@ namespace GameLib {
         void update(Actor& actor, World& world);
     };
 
+    class ColliderPhysicsComponent : public SimplePhysicsComponent {
+    public:
+        virtual ~ColliderPhysicsComponent() {}
+
+        void update(Actor& actor, World& world);
+    };
+
     class SimpleGraphicsComponent : public GraphicsComponent {
     public:
         virtual ~SimpleGraphicsComponent() {}
